@@ -1,10 +1,17 @@
-using ContosoUniversity.Data;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Mvc;
+#region snippet_Usings
+using ContosoUniversity.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
+#endregion
 
 namespace ContosoUniversity
 {
@@ -17,20 +24,25 @@ namespace ContosoUniversity
 
         public IConfiguration Configuration { get; }
 
-        #region snippet
+        // This method gets called by the runtime. Use this method to add services to the container.
+        #region snippet_SchoolContext
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<CookiePolicyOptions>(options =>
+            {
+                options.CheckConsentNeeded = context => true;
+                options.MinimumSameSitePolicy = SameSiteMode.None;
+            });
+
             services.AddDbContext<SchoolContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddDatabaseDeveloperPageExceptionFilter();
-
-            services.AddControllersWithViews();
+            services.AddMvc();
         }
         #endregion
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -39,22 +51,16 @@ namespace ContosoUniversity
             else
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
             }
-            app.UseHttpsRedirection();
+
             app.UseStaticFiles();
 
-            app.UseRouting();
-
-            app.UseAuthorization();
-
-            #region snippet2
-            app.UseEndpoints(endpoints =>
+            #region snippet_Route
+            app.UseMvc(routes =>
             {
-                endpoints.MapControllerRoute(
+                routes.MapRoute(
                     name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
+                    template: "{controller=Home}/{action=Index}/{id?}");
             });
             #endregion
         }

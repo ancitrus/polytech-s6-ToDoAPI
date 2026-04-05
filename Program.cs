@@ -1,25 +1,26 @@
-using ContosoUniversity.Data;
-using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System;
+#region snippet_Usings
+using Microsoft.Extensions.DependencyInjection;
+using ContosoUniversity.Data;
+#endregion
 
 namespace ContosoUniversity
 {
     public class Program
     {
+#region snippet_Seed
         public static void Main(string[] args)
         {
-            var host = CreateHostBuilder(args).Build();
+             var host = CreateWebHostBuilder(args).Build();
 
-            CreateDbIfNotExists(host);
-
-            host.Run();
-        }
-
-        private static void CreateDbIfNotExists(IHost host)
-        {
             using (var scope = host.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
@@ -31,16 +32,16 @@ namespace ContosoUniversity
                 catch (Exception ex)
                 {
                     var logger = services.GetRequiredService<ILogger<Program>>();
-                    logger.LogError(ex, "An error occurred creating the DB.");
+                    logger.LogError(ex, "An error occurred while seeding the database.");
                 }
             }
-        }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                });
+            host.Run();
+        }
+#endregion
+
+        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+            WebHost.CreateDefaultBuilder(args)
+                .UseStartup<Startup>();
     }
 }
