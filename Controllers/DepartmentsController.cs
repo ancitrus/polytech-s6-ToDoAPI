@@ -1,7 +1,4 @@
-//#define ScaffoldedCode
-#define RawSQL
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -25,33 +22,11 @@ namespace ContosoUniversity.Controllers
         // GET: Departments
         public async Task<IActionResult> Index()
         {
-            var departments = _context.Departments
-                .Include(d => d.Administrator)
-                .AsNoTracking();
-            return View(await departments.ToListAsync());
+            var schoolContext = _context.Departments.Include(d => d.Administrator);
+            return View(await schoolContext.ToListAsync());
         }
 
         // GET: Departments/Details/5
-#if ScaffoldedCode
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var department = await _context.Departments
-                .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.DepartmentID == id);
-            if (department == null)
-            {
-                return NotFound();
-            }
-
-            return View(department);
-        }
-#elif RawSQL
-// <snippet_RawSQL>
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -61,7 +36,7 @@ namespace ContosoUniversity.Controllers
 
             string query = "SELECT * FROM Department WHERE DepartmentID = {0}";
             var department = await _context.Departments
-                .FromSql(query, id)
+                .FromSqlRaw(query, id)
                 .Include(d => d.Administrator)
                 .AsNoTracking()
                 .FirstOrDefaultAsync();
@@ -73,20 +48,20 @@ namespace ContosoUniversity.Controllers
 
             return View(department);
         }
-// </snippet_RawSQL>
-#endif
 
         // GET: Departments/Create
         public IActionResult Create()
         {
-            ViewData["InstructorID"] = new SelectList(_context.Instructors.AsNoTracking(), "ID", "FullName");
+            ViewData["InstructorID"] = new SelectList(_context.Instructors, "ID", "FullName");
             return View();
         }
 
         // POST: Departments/Create
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Budget,InstructorID,Name,StartDate")] Department department)
+        public async Task<IActionResult> Create([Bind("DepartmentID,Name,Budget,StartDate,InstructorID,RowVersion")] Department department)
         {
             if (ModelState.IsValid)
             {
@@ -94,9 +69,7 @@ namespace ContosoUniversity.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-// <snippet_Dropdown>
             ViewData["InstructorID"] = new SelectList(_context.Instructors, "ID", "FullName", department.InstructorID);
-// </snippet_Dropdown>
             return View(department);
         }
 
@@ -108,24 +81,22 @@ namespace ContosoUniversity.Controllers
                 return NotFound();
             }
 
-// <snippet_EagerLoading>
             var department = await _context.Departments
-                .Include(d => d.Administrator)
+                .Include(i => i.Administrator)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(m => m.DepartmentID == id);
-// </snippet_EagerLoading>
+
             if (department == null)
             {
                 return NotFound();
             }
-            ViewData["InstructorID"] = new SelectList(_context.Instructors.AsNoTracking(), "ID", "FullName", department.InstructorID);
+            ViewData["InstructorID"] = new SelectList(_context.Instructors, "ID", "FullName", department.InstructorID);
             return View(department);
         }
 
         // POST: Departments/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-// <snippet_EditPost>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int? id, byte[] rowVersion)
@@ -135,7 +106,7 @@ namespace ContosoUniversity.Controllers
                 return NotFound();
             }
 
-            var departmentToUpdate = await _context.Departments.Include(d => d.Administrator).FirstOrDefaultAsync(m => m.DepartmentID == id);
+            var departmentToUpdate = await _context.Departments.Include(i => i.Administrator).FirstOrDefaultAsync(m => m.DepartmentID == id);
 
             if (departmentToUpdate == null)
             {
@@ -204,10 +175,8 @@ namespace ContosoUniversity.Controllers
             ViewData["InstructorID"] = new SelectList(_context.Instructors, "ID", "FullName", departmentToUpdate.InstructorID);
             return View(departmentToUpdate);
         }
-// </snippet_EditPost>
 
         // GET: Departments/Delete/5
-// <snippet_DeleteGet>
         public async Task<IActionResult> Delete(int? id, bool? concurrencyError)
         {
             if (id == null)
@@ -240,10 +209,7 @@ namespace ContosoUniversity.Controllers
 
             return View(department);
         }
-// </snippet_DeleteGet>
-
         // POST: Departments/Delete/5
-// <snippet_DeletePost>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(Department department)
@@ -263,6 +229,10 @@ namespace ContosoUniversity.Controllers
                 return RedirectToAction(nameof(Delete), new { concurrencyError = true, id = department.DepartmentID });
             }
         }
-// </snippet_DeletePost>
+
+        private bool DepartmentExists(int id)
+        {
+            return _context.Departments.Any(e => e.DepartmentID == id);
+        }
     }
 }

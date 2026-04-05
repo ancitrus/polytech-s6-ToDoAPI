@@ -1,7 +1,4 @@
-//#define ScaffoldedCode
-#define RevisedIndexMethod
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,20 +16,10 @@ namespace ContosoUniversity.Controllers
 
         public CoursesController(SchoolContext context)
         {
-            _context = context;    
+            _context = context;
         }
 
         // GET: Courses
-#if ScaffoldedCode
-        public async Task<IActionResult> Index()
-        {
-            var schoolContext = _context.Courses
-                .Include(c => c.Department)
-                .AsNoTracking();
-            return View(await schoolContext.ToListAsync());
-        }
-#elif RevisedIndexMethod
-// <snippet_RevisedIndexMethod>
         public async Task<IActionResult> Index()
         {
             var courses = _context.Courses
@@ -40,10 +27,8 @@ namespace ContosoUniversity.Controllers
                 .AsNoTracking();
             return View(await courses.ToListAsync());
         }
-// </snippet_RevisedIndexMethod>
-#endif
+
         // GET: Courses/Details/5
-// <snippet_Details>
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -62,18 +47,17 @@ namespace ContosoUniversity.Controllers
 
             return View(course);
         }
-// </snippet_Details>
 
         // GET: Courses/Create
-// <snippet_CreateGet>
         public IActionResult Create()
         {
             PopulateDepartmentsDropDownList();
             return View();
         }
-// </snippet_CreateGet>
+
         // POST: Courses/Create
-// <snippet_CreatePost>
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("CourseID,Credits,DepartmentID,Title")] Course course)
@@ -87,10 +71,8 @@ namespace ContosoUniversity.Controllers
             PopulateDepartmentsDropDownList(course.DepartmentID);
             return View(course);
         }
-// </snippet_CreatePost>
 
         // GET: Courses/Edit/5
-// <snippet_EditGet>
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -108,11 +90,10 @@ namespace ContosoUniversity.Controllers
             PopulateDepartmentsDropDownList(course.DepartmentID);
             return View(course);
         }
-// </snippet_EditGet>
-
 
         // POST: Courses/Edit/5
-// <snippet_EditPost>
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost, ActionName("Edit")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditPost(int? id)
@@ -132,6 +113,7 @@ namespace ContosoUniversity.Controllers
                 try
                 {
                     await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateException /* ex */)
                 {
@@ -140,14 +122,11 @@ namespace ContosoUniversity.Controllers
                         "Try again, and if the problem persists, " +
                         "see your system administrator.");
                 }
-                return RedirectToAction(nameof(Index));
             }
             PopulateDepartmentsDropDownList(courseToUpdate.DepartmentID);
             return View(courseToUpdate);
         }
-// </snippet_EditPost>
 
-// <snippet_Departments>
         private void PopulateDepartmentsDropDownList(object selectedDepartment = null)
         {
             var departmentsQuery = from d in _context.Departments
@@ -155,10 +134,8 @@ namespace ContosoUniversity.Controllers
                                    select d;
             ViewBag.DepartmentID = new SelectList(departmentsQuery.AsNoTracking(), "DepartmentID", "Name", selectedDepartment);
         }
-// </snippet_Departments>
 
         // GET: Courses/Delete/5
-// <snippet_DeleteGet>
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -177,43 +154,39 @@ namespace ContosoUniversity.Controllers
 
             return View(course);
         }
-// </snippet_DeleteGet>
 
         // POST: Courses/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var course = await _context.Courses
-                .FirstOrDefaultAsync(m => m.CourseID == id);
-            if (course != null)
-            {
-                _context.Courses.Remove(course);
-                await _context.SaveChangesAsync();
-            }
+            var course = await _context.Courses.FindAsync(id);
+            _context.Courses.Remove(course);
+            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-// <snippet_UpdateGet>
         public IActionResult UpdateCourseCredits()
         {
             return View();
         }
-// </snippet_UpdateGet>
 
-// <snippet_UpdatePost>
         [HttpPost]
         public async Task<IActionResult> UpdateCourseCredits(int? multiplier)
         {
             if (multiplier != null)
             {
-                ViewData["RowsAffected"] = 
-                    await _context.Database.ExecuteSqlCommandAsync(
+                ViewData["RowsAffected"] =
+                    await _context.Database.ExecuteSqlRawAsync(
                         "UPDATE Course SET Credits = Credits * {0}",
                         parameters: multiplier);
             }
             return View();
         }
-// </snippet_UpdatePost>
+
+        private bool CourseExists(int id)
+        {
+            return _context.Courses.Any(e => e.CourseID == id);
+        }
     }
 }

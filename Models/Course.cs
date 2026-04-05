@@ -1,27 +1,4 @@
-#define Final // or Intro
-
-#if Intro
-// <snippet_Intro>
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace ContosoUniversity.Models
-{
-    public class Course
-    {
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public int CourseID { get; set; }
-        public string Title { get; set; }
-        public int Credits { get; set; }
-
-        public ICollection<Enrollment> Enrollments { get; set; }
-    }
-}
-// </snippet_Intro>
-
-#elif Final
-// <snippet_Final>
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -46,5 +23,3 @@ namespace ContosoUniversity.Models
         public ICollection<CourseAssignment> CourseAssignments { get; set; }
     }
 }
-// </snippet_Final>
-#endif

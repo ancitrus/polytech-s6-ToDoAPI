@@ -7,19 +7,16 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-#region snippet_Usings
 using Microsoft.Extensions.DependencyInjection;
 using ContosoUniversity.Data;
-#endregion
 
 namespace ContosoUniversity
 {
     public class Program
     {
-#region snippet_Seed
         public static void Main(string[] args)
         {
-             var host = CreateWebHostBuilder(args).Build();
+            var host = CreateWebHostBuilder(args).Build();
 
             using (var scope = host.Services.CreateScope())
             {
@@ -38,7 +35,6 @@ namespace ContosoUniversity
 
             host.Run();
         }
-#endregion
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)

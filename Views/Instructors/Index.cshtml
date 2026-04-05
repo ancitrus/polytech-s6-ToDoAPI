@@ -1,4 +1,4 @@
-@model ContosoUniversity.Models.SchoolViewModels.InstructorIndexData
+﻿@model ContosoUniversity.Models.SchoolViewModels.InstructorIndexData
 
 @{
     ViewData["Title"] = "Instructors";
@@ -59,7 +59,7 @@
                     <a asp-action="Delete" asp-route-id="@item.ID">Delete</a>
                 </td>
             </tr>
-           }
+        }
     </tbody>
 </table>
 
@@ -96,6 +96,7 @@
                 </td>
             </tr>
         }
+
     </table>
 }
 
@@ -122,4 +123,3 @@
         }
     </table>
 }
-
